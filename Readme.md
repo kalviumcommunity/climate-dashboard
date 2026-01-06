@@ -7,7 +7,7 @@ author: "Team Winter | Squad 74"
 
 An interactive web dashboard that visualizes climate and environmental data in a simple and understandable way, helping communities interpret data and take informed actions.
 
----
+----
 
 ## 📌 Problem Statement
 
