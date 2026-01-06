@@ -26,6 +26,23 @@ This project provides a **visual and interactive dashboard** that converts compl
 - 📊 Interactive charts for temperature, rainfall, and climate trends  
 - 🗺️ Map-based visualization for location-wise environmental data  
 - 🎛️ Filters by date, region, and data type  
-- 📱 Responsive and user-friendly interface  
+- 📱 Responsive and user-friendly interface
+
+### Frontend
+- **React JS**
+- **Tailwind CSS**
+- **Recharts / Chart.js (React chart libraries)**
+- **Leaflet.js (React-based map integration)**
+
+### Backend
+- **Node.js**
+- **Express.js**
+
+### Database
+- **MongoDB**
+
+### APIs
+- OpenWeatherMap API
+- Air Quality and Environmental Open APIs
 
 ---
