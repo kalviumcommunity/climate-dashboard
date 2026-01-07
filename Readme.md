@@ -28,18 +28,13 @@ This project provides a **visual and interactive dashboard** that converts compl
 - 🎛️ Filters by date, region, and data type  
 - 📱 Responsive and user-friendly interface
 
-### Frontend
-- **React JS**
-- **Tailwind CSS**
-- **Recharts / Chart.js (React chart libraries)**
-- **Leaflet.js (React-based map integration)**
-
-### Backend
-- **Node.js**
-- **Express.js**
-
-### Database
-- **MongoDB**
+## Tech stack
+→Frontend (Next.js)
+→ API Layer (Next.js API routes)
+→ Database (PostgreSQL + Prisma)
+→ Caching Layer (Redis)
+→ Containerization (Docker)
+→ Deployment & Cloud Services (AWS or Azure)
 
 ### APIs
 - OpenWeatherMap API
