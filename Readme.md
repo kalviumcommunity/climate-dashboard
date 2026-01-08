@@ -1,43 +1,39 @@
----
-title: "Climate Insights Dashboard"
-author: "Team Winter | Squad 74"
----
+# Climate Dashboard
 
-# 🌍 Climate Insights Dashboard
-
-An interactive web dashboard that visualizes climate and environmental data in a simple and understandable way, helping communities interpret data and take informed actions.
-
-----
-
-## 📌 Problem Statement
-
-Climate data is widely available, but it is often complex and difficult for common people to understand. Raw numbers and tables do not clearly communicate trends or environmental impact.
+## 📌 Project Description
+The Climate Dashboard is a simple web application built using **Next.js with TypeScript**.  
+The problem this project addresses is organizing a modern frontend application in a clean, scalable way so that future features can be added without confusion or rework.
 
 ---
 
-## 💡 Solution
+## 📁 Folder Structure
 
-This project provides a **visual and interactive dashboard** that converts complex climate data into easy-to-read charts, maps, and insights for better awareness and decision-making.
+src/
+├── app/ # Routes, pages, and layouts (App Router)
+├── components/ # Reusable UI components
+├── lib/ # Utility functions and helper logic
 
----
 
-## 🚀 Features
+### Folder Explanation
 
-- 📊 Interactive charts for temperature, rainfall, and climate trends  
-- 🗺️ Map-based visualization for location-wise environmental data  
-- 🎛️ Filters by date, region, and data type  
-- 📱 Responsive and user-friendly interface
+- **app/**
+  - Handles routing, pages, layouts, and API routes
+  - Uses Next.js App Router for structured navigation
 
-## Tech stack
-→Frontend (Next.js)
-→ API Layer (Next.js API routes)
-→ Database (PostgreSQL + Prisma)
-→ Caching Layer (Redis)
-→ Containerization (Docker)
-→ Deployment & Cloud Services (AWS or Azure)
+- **components/**
+  - Contains reusable UI components
+  - Encourages modular and maintainable UI design
 
-### APIs
-- OpenWeatherMap API
-- Air Quality and Environmental Open APIs
+- **lib/**
+  - Stores utility functions and shared logic
+  - Keeps business logic separate from UI components
 
 ---
+
+## ⚙️ Setup Instructions
+
+### Installation
+```bash
+npm install
+
+![screenshot](localhost.png)
