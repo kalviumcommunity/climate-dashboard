@@ -1,48 +1,43 @@
----
-title: "Climate Insights Dashboard"
-author: "Team Winter | Squad 74"
----
+# Climate Dashboard (Next.js + TypeScript)
 
-# 🌍 Climate Insights Dashboard
-
-An interactive web dashboard that visualizes climate and environmental data in a simple and understandable way, helping communities interpret data and take informed actions.
-
-----
-
-## 📌 Problem Statement
-
-Climate data is widely available, but it is often complex and difficult for common people to understand. Raw numbers and tables do not clearly communicate trends or environmental impact.
+## 📌 Project Overview
+This is a simple Climate Dashboard built using **Next.js (App Router)** and **TypeScript**.  
+The project follows a clean and scalable folder structure to support future growth.
 
 ---
 
-## 💡 Solution
+## 📁 Folder Structure Explanation
 
-This project provides a **visual and interactive dashboard** that converts complex climate data into easy-to-read charts, maps, and insights for better awareness and decision-making.
+src/app/
+- Contains routes, pages, layouts, and API routes
+- Uses Next.js App Router for better performance and scalability
+
+src/components/
+- Stores reusable UI components
+- Helps avoid code duplication
+
+src/lib/
+- Contains helper functions, utilities, and configuration files
+- Keeps business logic separate from UI
+
+---
+
+## 🧾 Naming Conventions
+- Components: PascalCase (e.g., `ClimateCard.tsx`)
+- Utility files: camelCase (e.g., `fetchClimate.ts`)
+- Folders: lowercase
 
 ---
 
-## 🚀 Features
-
-- 📊 Interactive charts for temperature, rainfall, and climate trends  
-- 🗺️ Map-based visualization for location-wise environmental data  
-- 🎛️ Filters by date, region, and data type  
-- 📱 Responsive and user-friendly interface
-
-### Frontend
-- **React JS**
-- **Tailwind CSS**
-- **Recharts / Chart.js (React chart libraries)**
-- **Leaflet.js (React-based map integration)**
-
-### Backend
-- **Node.js**
-- **Express.js**
-
-### Database
-- **MongoDB**
-
-### APIs
-- OpenWeatherMap API
-- Air Quality and Environmental Open APIs
+## 🚀 Scalability Benefits
+- Clear separation of concerns
+- Easy to add new pages, components, or utilities
+- Improves readability and maintainability for teams
 
 ---
+
+## ▶️ Running the Project Locally
+
+```bash
+npm install
+npm run dev
