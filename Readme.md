@@ -1,3 +1,4 @@
+
 # Climate Dashboard
 
 ## 📌 Project Description
@@ -37,3 +38,6 @@ src/
 npm install
 
 ![screenshot](localhost.png)
+=======
+
+
