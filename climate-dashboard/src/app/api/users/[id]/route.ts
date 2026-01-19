@@ -51,6 +51,47 @@ export async function PUT(
         return sendValidationError("Username already exists");
       }
     }
+    
+    // Email validation
+    if (email) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return sendValidationError("Invalid email format");
+      }
+
+      const duplicateEmail = mockUsers.find(
+        (u) => u.email === email && u.id !== params.id
+      );
+      if (duplicateEmail) {
+        return sendValidationError("Email already exists");
+      }
+    }
+
+    // Role validation (Climate Dashboard roles)
+    if (role) {
+      const validRoles = ["admin", "operator"];
+      if (!validRoles.includes(role)) {
+        return sendValidationError(
+          Role must be one of: ${validRoles.join(", ")}
+        );
+      }
+    }
+
+    const updatedUser: User = {
+      ...existingUser,
+      username: username ?? existingUser.username,
+      email: email ?? existingUser.email,
+      role: role ?? existingUser.role,
+      updatedAt: new Date(),
+    };
+
+    mockUsers[userIndex] = updatedUser;
+
+    return sendSuccess(updatedUser, "User updated successfully");
+  } catch (error) {
+    return sendValidationError("Invalid request body");
+  }
+}
 
 
 // DELETE /api/users/[id]
