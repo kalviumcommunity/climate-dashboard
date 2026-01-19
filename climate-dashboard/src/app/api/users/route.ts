@@ -1,7 +1,12 @@
 import { NextRequest } from "next/server";
-import { sendSuccess, sendValidationError, sendNotFoundError } from "@/utils/responseHandler";
+import {
+  sendSuccess,
+  sendValidationError,
+} from "@/utils/responseHandler";
 import { mockUsers } from "@/data/mockData";
 import { User, PaginationParams, FilterParams } from "@/types";
+
+/* ---------- helpers ---------- */
 
 function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -22,7 +27,11 @@ function filterUsers(users: User[], filters: FilterParams): User[] {
   });
 }
 
-function paginateResults<T>(items: T[], page: number, limit: number): {
+function paginateResults<T>(
+  items: T[],
+  page: number,
+  limit: number
+): {
   data: T[];
   total: number;
   totalPages: number;
@@ -31,30 +40,31 @@ function paginateResults<T>(items: T[], page: number, limit: number): {
   const totalPages = Math.ceil(total / limit);
   const startIndex = (page - 1) * limit;
   const data = items.slice(startIndex, startIndex + limit);
-  
+
   return { data, total, totalPages };
 }
 
+/* ---------- GET /api/users ---------- */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const pagination = parsePaginationParams(searchParams);
     const filters = parseFilterParams(searchParams);
 
-    let filteredUsers = filterUsers(mockUsers, filters);
+    const filteredUsers = filterUsers(mockUsers, filters);
 
     const { data, total, totalPages } = paginateResults(
       filteredUsers,
-      pagination.page!,
-      pagination.limit!
+      pagination.page,
+      pagination.limit
     );
 
     return sendSuccess(
       data,
       "Users retrieved successfully",
       {
-        page: pagination.page!,
-        limit: pagination.limit!,
+        page: pagination.page,
+        limit: pagination.limit,
         total,
         totalPages,
       }
@@ -64,24 +74,30 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/* ---------- POST /api/users ---------- */
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
     const { username, email, role } = body;
-    
+
     if (!username || !email || !role) {
-      return sendValidationError("Missing required fields: username, email, role");
+      return sendValidationError(
+        "Missing required fields: username, email, role"
+      );
     }
 
-    const existingUser = mockUsers.find(user => user.username === username || user.email === email);
+    const existingUser = mockUsers.find(
+      (u) => u.username === username || u.email === email
+    );
     if (existingUser) {
       return sendValidationError("Username or email already exists");
     }
 
     const validRoles = ["admin", "operator"];
     if (!validRoles.includes(role)) {
-      return sendValidationError(`Role must be one of: ${validRoles.join(", ")}`);
+      return sendValidationError(
+        `Role must be one of: ${validRoles.join(", ")}`
+      );
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
