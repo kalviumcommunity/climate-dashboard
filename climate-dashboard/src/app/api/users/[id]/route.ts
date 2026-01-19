@@ -1,184 +1,75 @@
-import { NextResponse } from 'next/server';
+import { NextRequest } from "next/server";
+import {
+  sendSuccess,
+  sendValidationError,
+  sendNotFoundError,
+  sendError,
+} from "@/utils/responseHandler";
+import { mockUsers } from "@/data/mockData";
+import { User } from "@/types";
 
-// User interface
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  createdAt: Date;
-  updatedAt?: Date;
-}
-
-// Mock data store (shared with main users route)
-let users: User[] = [
-  { id: 1, name: 'Alice', email: 'alice@example.com', createdAt: new Date('2024-01-01') },
-  { id: 2, name: 'Bob', email: 'bob@example.com', createdAt: new Date('2024-01-02') },
-  { id: 3, name: 'Charlie', email: 'charlie@example.com', createdAt: new Date('2024-01-03') },
-];
-
-// GET /api/users/[id] - Get a specific user by ID
+// GET /api/users/[id]
 export async function GET(
-  _req: Request,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const user = mockUsers.find((u) => u.id === params.id);
 
-    const user = users.find(u => u.id === id);
-    
     if (!user) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return sendNotFoundError("User not found");
     }
 
-    return NextResponse.json({ data: user });
+    return sendSuccess(user, "User retrieved successfully");
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return sendError("Failed to retrieve user");
   }
 }
 
-// PUT /api/users/[id] - Update a user completely
+// PUT /api/users/[id]
 export async function PUT(
-  req: Request,
+  request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const body = await request.json();
+    const userIndex = mockUsers.findIndex((u) => u.id === params.id);
 
-    const body = await req.json();
-    
-    if (!body.name || !body.email) {
-      return NextResponse.json(
-        { error: 'Name and email are required' },
-        { status: 400 }
-      );
-    }
-
-    const userIndex = users.findIndex(u => u.id === id);
-    
     if (userIndex === -1) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return sendNotFoundError("User not found");
     }
 
-    users[userIndex] = {
-      ...users[userIndex],
-      name: body.name,
-      email: body.email,
-      updatedAt: new Date(),
-    };
+    const { username, email, role } = body;
+    const existingUser = mockUsers[userIndex];
 
-    return NextResponse.json({
-      message: 'User updated successfully',
-      data: users[userIndex],
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Invalid JSON payload' },
-      { status: 400 }
-    );
-  }
-}
-
-// PATCH /api/users/[id] - Partially update a user
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const id = Number(params.id);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
+    // Username validation
+    if (username) {
+      const duplicateUser = mockUsers.find(
+        (u) => u.username === username && u.id !== params.id
       );
+      if (duplicateUser) {
+        return sendValidationError("Username already exists");
+      }
     }
 
-    const body = await req.json();
-    const userIndex = users.findIndex(u => u.id === id);
-    
-    if (userIndex === -1) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
-    }
 
-    users[userIndex] = {
-      ...users[userIndex],
-      ...body,
-      updatedAt: new Date(),
-    };
-
-    return NextResponse.json({
-      message: 'User updated successfully',
-      data: users[userIndex],
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { error: 'Invalid JSON payload' },
-      { status: 400 }
-    );
-  }
-}
-
-// DELETE /api/users/[id] - Delete a user
+// DELETE /api/users/[id]
 export async function DELETE(
-  _req: Request,
+  _request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = Number(params.id);
-    
-    if (isNaN(id)) {
-      return NextResponse.json(
-        { error: 'Invalid user ID' },
-        { status: 400 }
-      );
-    }
+    const userIndex = mockUsers.findIndex((u) => u.id === params.id);
 
-    const userIndex = users.findIndex(u => u.id === id);
-    
     if (userIndex === -1) {
-      return NextResponse.json(
-        { error: 'User not found' },
-        { status: 404 }
-      );
+      return sendNotFoundError("User not found");
     }
 
-    const deletedUser = users[userIndex];
-    users.splice(userIndex, 1);
+    const deletedUser = mockUsers[userIndex];
+    mockUsers.splice(userIndex, 1);
 
-    return NextResponse.json({
-      message: 'User deleted successfully',
-      data: deletedUser,
-    });
+    return sendSuccess(deletedUser, "User deleted successfully");
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return sendError("Failed to delete user");
   }
 }
