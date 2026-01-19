@@ -1,10 +1,9 @@
-import { NextRequest } from "next/server";
-import {
-  sendSuccess,
-  sendValidationError,
-} from "@/utils/responseHandler";
+import { NextRequest, NextResponse } from "next/server";
+import { sendSuccess, sendValidationError } from "@/utils/responseHandler";
 import { mockUsers } from "@/data/mockData";
 import { User, PaginationParams, FilterParams } from "@/types";
+import { userCreateSchema } from "@/lib/schemas/userSchema";
+import { handleZodError } from "@/lib/zodError";
 
 /* ---------- helpers ---------- */
 
@@ -78,31 +77,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { username, email, role } = body;
-
-    if (!username || !email || !role) {
-      return sendValidationError(
-        "Missing required fields: username, email, role"
-      );
-    }
+    const { username, email, role } = userCreateSchema.parse(body);
 
     const existingUser = mockUsers.find(
       (u) => u.username === username || u.email === email
     );
     if (existingUser) {
       return sendValidationError("Username or email already exists");
-    }
-
-    const validRoles = ["admin", "operator"];
-    if (!validRoles.includes(role)) {
-      return sendValidationError(
-        `Role must be one of: ${validRoles.join(", ")}`
-      );
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return sendValidationError("Invalid email format");
     }
 
     const newUser: User = {
@@ -117,6 +98,6 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newUser, "User created successfully");
   } catch (error) {
-    return sendValidationError("Invalid request body");
+    return handleZodError(error);
   }
 }

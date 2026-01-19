@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { sendSuccess, sendValidationError, sendNotFoundError } from "@/utils/responseHandler";
 import { mockWeatherStations } from "@/data/mockData";
 import { WeatherStation, PaginationParams, FilterParams } from "@/types";
+import { stationCreateSchema } from "@/lib/schemas/stationSchema";
+import { handleZodError } from "@/lib/zodError";
 
 function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -73,25 +75,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const { name, location, latitude, longitude, status } = body;
-    
-    if (!name || !location || latitude === undefined || longitude === undefined) {
-      return sendValidationError("Missing required fields: name, location, latitude, longitude");
-    }
 
-    if (typeof latitude !== "number" || typeof longitude !== "number") {
-      return sendValidationError("Latitude and longitude must be numbers");
-    }
-
-    if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
-      return sendValidationError("Invalid latitude or longitude values");
-    }
-
-    const validStatuses = ["active", "inactive", "maintenance"];
-    if (status && !validStatuses.includes(status)) {
-      return sendValidationError(`Status must be one of: ${validStatuses.join(", ")}`);
-    }
+    const { name, location, latitude, longitude, status } =
+      stationCreateSchema.parse(body);
 
     const newStation: WeatherStation = {
       id: `station-${Date.now()}`,
@@ -107,6 +93,6 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newStation, "Weather station created successfully");
   } catch (error) {
-    return sendValidationError("Invalid request body");
+    return handleZodError(error);
   }
 }

@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { sendSuccess, sendValidationError, sendNotFoundError } from "@/utils/responseHandler";
 import { mockSensorAlerts, mockWeatherStations } from "@/data/mockData";
 import { SensorAlert, PaginationParams, FilterParams } from "@/types";
+import { alertCreateSchema } from "@/lib/schemas/alertSchema";
+import { handleZodError } from "@/lib/zodError";
 
 function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -94,29 +96,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const { stationId, type, threshold, currentValue } = body;
-    
-    if (!stationId || !type || threshold === undefined || currentValue === undefined) {
-      return sendValidationError("Missing required fields: stationId, type, threshold, currentValue");
-    }
+
+    const { stationId, type, threshold, currentValue } =
+      alertCreateSchema.parse(body);
 
     const stationExists = mockWeatherStations.some(station => station.id === stationId);
     if (!stationExists) {
       return sendNotFoundError("Weather station not found");
-    }
-
-    const validTypes = ["temperature", "rainfall", "airQuality"];
-    if (!validTypes.includes(type)) {
-      return sendValidationError(`Type must be one of: ${validTypes.join(", ")}`);
-    }
-
-    if (typeof threshold !== "number" || typeof currentValue !== "number") {
-      return sendValidationError("Threshold and current value must be numbers");
-    }
-
-    if (threshold < 0 || currentValue < 0) {
-      return sendValidationError("Threshold and current value cannot be negative");
     }
 
     const newAlert: SensorAlert = {
@@ -133,6 +119,6 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newAlert, "Sensor alert created successfully");
   } catch (error) {
-    return sendValidationError("Invalid request body");
+    return handleZodError(error);
   }
 }

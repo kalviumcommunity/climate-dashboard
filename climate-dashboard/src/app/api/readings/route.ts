@@ -2,6 +2,8 @@ import { NextRequest } from "next/server";
 import { sendSuccess, sendValidationError, sendNotFoundError } from "@/utils/responseHandler";
 import { mockSensorReadings, mockWeatherStations } from "@/data/mockData";
 import { SensorReading, PaginationParams, FilterParams } from "@/types";
+import { readingCreateSchema } from "@/lib/schemas/readingSchema";
+import { handleZodError } from "@/lib/zodError";
 
 function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -90,34 +92,13 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
-    const { stationId, temperature, humidity, airQuality, rainfall } = body;
-    
-    if (!stationId || temperature === undefined || humidity === undefined || 
-        airQuality === undefined || rainfall === undefined) {
-      return sendValidationError("Missing required fields: stationId, temperature, humidity, airQuality, rainfall");
-    }
+
+    const { stationId, temperature, humidity, airQuality, rainfall } =
+      readingCreateSchema.parse(body);
 
     const stationExists = mockWeatherStations.some(station => station.id === stationId);
     if (!stationExists) {
       return sendNotFoundError("Weather station not found");
-    }
-
-    if (typeof temperature !== "number" || typeof humidity !== "number" || 
-        typeof airQuality !== "number" || typeof rainfall !== "number") {
-      return sendValidationError("All sensor values must be numbers");
-    }
-
-    if (humidity < 0 || humidity > 100) {
-      return sendValidationError("Humidity must be between 0 and 100");
-    }
-
-    if (airQuality < 0 || airQuality > 500) {
-      return sendValidationError("Air quality must be between 0 and 500");
-    }
-
-    if (rainfall < 0) {
-      return sendValidationError("Rainfall cannot be negative");
     }
 
     const newReading: SensorReading = {
@@ -134,6 +115,6 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newReading, "Sensor reading created successfully");
   } catch (error) {
-    return sendValidationError("Invalid request body");
+    return handleZodError(error);
   }
 }
