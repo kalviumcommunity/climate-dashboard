@@ -1,0 +1,79 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  username  String
+  email     String   @unique
+  role      String   @default("operator") // 'admin' | 'operator'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+}
+
+model WeatherStation {
+  id        Int      @id @default(autoincrement())
+  name      String
+  location  String
+  latitude  Float
+  longitude Float
+  status    String   @default("active") // 'active' | 'inactive' | 'maintenance'
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  readings  SensorReading[]
+  alerts    SensorAlert[]
+
+  @@index([status])
+}
+
+model SensorReading {
+  id          Int      @id @default(autoincrement())
+  stationId   Int
+  temperature Float
+  humidity    Float
+  airQuality  Float
+  rainfall    Float
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  station WeatherStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId])
+  @@index([recordedAt])
+}
+
+model SensorAlert {
+  id           Int      @id @default(autoincrement())
+  stationId    Int
+  type         String   // 'temperature' | 'rainfall' | 'airQuality'
+  threshold    Float
+  currentValue Float
+  status       String   @default("active") // 'active' | 'resolved' | 'acknowledged'
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  station WeatherStation @relation(fields: [stationId], references: [id], onDelete: Cascade)
+
+  @@index([stationId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+
+
