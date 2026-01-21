@@ -1,0 +1,6 @@
+{
+  "version": 3,
+  "sources": [],
+  "sections": [
+    {"offset": {"line": 18, "column": 0}, "map": {"version":3,"sources":["file:///C:/Users/rava_/OneDrive/Desktop/winter%20climate%20project/climate-dashboard/climate-dashboard/src/app/page.tsx"],"sourcesContent":["export default function HomePage() {\r\n  const apiUrl = process.env.NEXT_PUBLIC_API_BASE_URL;\r\n\r\n  return (\r\n    <main>\r\n      <h1>Climate Dashboard</h1>\r\n      <p>API Base URL: {apiUrl}</p>\r\n    </main>\r\n  );\r\n}\r\n"],"names":[],"mappings":";;;;;;AAAe,SAAS;IACtB,MAAM,SAAS,QAAQ,GAAG,CAAC,wBAAwB;IAEnD,qBACE,8OAAC;;0BACC,8OAAC;0BAAG;;;;;;0BACJ,8OAAC;;oBAAE;oBAAe;;;;;;;;;;;;;AAGxB"}}]
+}
