@@ -32,3 +32,4 @@ export const alertUpdateSchema = z.object({
 export type AlertCreateInput = z.infer<typeof alertCreateSchema>;
 export type AlertUpdateInput = z.infer<typeof alertUpdateSchema>;
 
+
