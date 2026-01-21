@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 
 /* ---------- Icons ---------- */
 const ThermometerIcon = () => (
@@ -90,14 +91,13 @@ export default function HomePage() {
     return () => clearInterval(i);
   }, []);
 
-  /* ---------- AQI Helper ---------- */
   const getAirQualityStatus = (aqi: number) => {
     if (aqi <= 50) return { status: 'Good', color: 'bg-green-500' };
     if (aqi <= 100) return { status: 'Moderate', color: 'bg-yellow-500' };
     if (aqi <= 150) return { status: 'Unhealthy (Sensitive)', color: 'bg-orange-500' };
     if (aqi <= 200) return { status: 'Unhealthy', color: 'bg-red-500' };
     if (aqi <= 300) return { status: 'Very Unhealthy', color: 'bg-purple-500' };
-    return { status: 'Hazardous', color: 'bg-red-800' }; // FIXED
+    return { status: 'Hazardous', color: 'bg-red-800' };
   };
 
   if (loading) {
@@ -122,11 +122,30 @@ export default function HomePage() {
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">Climate Dashboard</h1>
-          <div className="text-right">
-            <p className="text-sm text-gray-500">{date}</p>
-            <p className="text-lg font-medium">{time}</p>
+
+          <div className="flex items-center gap-6">
+            <div className="text-right">
+              <p className="text-sm text-gray-500">{date}</p>
+              <p className="text-lg font-medium">{time}</p>
+            </div>
+
+            {/* Auth Buttons */}
+            <div className="flex gap-3">
+              <Link
+                href="/login"
+                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-100"
+              >
+                Login
+              </Link>
+              <Link
+                href="/signup"
+                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
+              >
+                Sign Up
+              </Link>
+            </div>
           </div>
         </div>
       </header>
@@ -137,6 +156,7 @@ export default function HomePage() {
             <Card icon={<ThermometerIcon />} label="Temperature" value={`${weatherData.temperature}°C`} />
             <Card icon={<DropletIcon />} label="Humidity" value={`${weatherData.humidity}%`} />
             <Card icon={<WindIcon />} label="Wind Speed" value={`${weatherData.windSpeed} km/h`} />
+
             <div className="bg-white p-6 rounded-lg shadow flex items-center">
               <div className={`p-3 rounded-full ${airQuality?.color} text-white`}>
                 <AlertTriangleIcon />
@@ -149,37 +169,12 @@ export default function HomePage() {
             </div>
           </div>
         )}
-
-        {/* Alerts */}
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-lg font-medium mb-4">Recent Alerts</h2>
-
-          <div className="flex items-start p-3 bg-red-50 rounded-lg mb-3">
-            <div className="text-red-500">
-              <AlertTriangleIcon />
-            </div>
-            <div className="ml-3">
-              <p className="font-medium">High Temperature Alert</p>
-              <p className="text-sm text-gray-500">Temperature exceeded 30°C</p>
-            </div>
-          </div>
-
-          <div className="flex items-start p-3 bg-yellow-50 rounded-lg">
-            <div className="text-yellow-500">
-              <AlertTriangleIcon />
-            </div>
-            <div className="ml-3">
-              <p className="font-medium">Moderate Air Quality</p>
-              <p className="text-sm text-gray-500">AQI is 78</p>
-            </div>
-          </div>
-        </div>
       </main>
     </div>
   );
 }
 
-/* ---------- Small Card Component ---------- */
+/* ---------- Card Component ---------- */
 function Card({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
     <div className="bg-white p-6 rounded-lg shadow flex items-center">
