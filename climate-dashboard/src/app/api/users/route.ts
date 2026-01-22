@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from "next/server";
-import { sendSuccess, sendValidationError } from "@/utils/responseHandler";
+import { NextRequest } from "next/server";
+import { sendSuccess } from "@/utils/responseHandler";
 import { mockUsers } from "@/data/mockData";
 import { User, PaginationParams, FilterParams } from "@/types";
 import { userCreateSchema } from "@/lib/schemas/userSchema";
-import { handleZodError } from "@/lib/zodError";
+import { handleError, ValidationError, DatabaseError } from "@/lib/errorHandler";
 
 /* ---------- helpers ---------- */
 
@@ -69,7 +69,12 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    return sendValidationError("Invalid request parameters");
+    const { searchParams } = new URL(request.url);
+    return handleError(error, {
+      method: "GET",
+      url: "/api/users",
+      searchParams: Object.fromEntries(searchParams)
+    });
   }
 }
 
@@ -83,7 +88,11 @@ export async function POST(request: NextRequest) {
       (u) => u.username === username || u.email === email
     );
     if (existingUser) {
-      return sendValidationError("Username or email already exists");
+      throw new ValidationError("Username or email already exists", {
+        method: "POST",
+        url: "/api/users",
+        body: { username, email }
+      });
     }
 
     const newUser: User = {
@@ -98,6 +107,9 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newUser, "User created successfully");
   } catch (error) {
-    return handleZodError(error);
+    return handleError(error, {
+      method: "POST",
+      url: "/api/users"
+    });
   }
 }

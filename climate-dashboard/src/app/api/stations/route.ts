@@ -1,9 +1,9 @@
 import { NextRequest } from "next/server";
-import { sendSuccess, sendValidationError, sendNotFoundError } from "@/utils/responseHandler";
+import { sendSuccess } from "@/utils/responseHandler";
 import { mockWeatherStations } from "@/data/mockData";
 import { WeatherStation, PaginationParams, FilterParams } from "@/types";
 import { stationCreateSchema } from "@/lib/schemas/stationSchema";
-import { handleZodError } from "@/lib/zodError";
+import { handleError, ValidationError, NotFoundError } from "@/lib/errorHandler";
 
 function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
   const page = Math.max(1, parseInt(searchParams.get("page") || "1"));
@@ -48,7 +48,11 @@ export async function GET(request: NextRequest) {
     let filteredStations = filterStations(mockWeatherStations, filters);
 
     if (filters.stationId && filteredStations.length === 0) {
-      return sendNotFoundError("Weather station not found");
+      throw new NotFoundError("Weather station not found", {
+        method: "GET",
+        url: "/api/stations",
+        stationId: filters.stationId
+      });
     }
 
     const { data, total, totalPages } = paginateResults(
@@ -68,7 +72,12 @@ export async function GET(request: NextRequest) {
       }
     );
   } catch (error) {
-    return sendValidationError("Invalid request parameters");
+    const { searchParams } = new URL(request.url);
+    return handleError(error, {
+      method: "GET",
+      url: "/api/stations",
+      searchParams: Object.fromEntries(searchParams)
+    });
   }
 }
 
@@ -93,6 +102,9 @@ export async function POST(request: NextRequest) {
 
     return sendSuccess(newStation, "Weather station created successfully");
   } catch (error) {
-    return handleZodError(error);
+    return handleError(error, {
+      method: "POST",
+      url: "/api/stations"
+    });
   }
 }
