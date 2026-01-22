@@ -41,6 +41,201 @@ This ensures only clean, consistent, and error-free code is committed.
 - Folders: lowercase
 
 ---
+## 🚨 Centralized Error Handling
+
+This Climate Dashboard implements a comprehensive centralized error handling system that ensures consistent, secure, and observable error management across all API routes.
+
+### Why Centralized Error Handling Matters
+
+Modern web applications can fail in many ways — from API timeouts to database issues. Without a centralized strategy, errors become scattered, logs inconsistent, and debugging difficult.
+
+Our centralized error handler ensures:
+- **Consistency**: Every error follows a uniform response format
+- **Security**: Sensitive stack traces are hidden in production
+- **Observability**: Structured logs make debugging and monitoring easier
+
+### Architecture Overview
+
+```
+src/lib/
+├── logger.ts          # Structured logging utility
+├── errorHandler.ts     # Centralized error handler
+└── schemas/           # Zod validation schemas
+
+src/app/api/
+├── users/route.ts     # Updated with centralized error handling
+├── stations/route.ts  # Updated with centralized error handling
+└── test-errors/route.ts # Demonstration endpoint
+```
+
+### Logger Utility (`src/lib/logger.ts`)
+
+Structured logging for consistent error tracking:
+
+```typescript
+export const logger = {
+  info: (message: string, meta?: any) => {
+    console.log(JSON.stringify({ 
+      level: "info", 
+      message, 
+      meta, 
+      timestamp: new Date().toISOString() 
+    }));
+  },
+  error: (message: string, meta?: any) => {
+    console.error(JSON.stringify({ 
+      level: "error", 
+      message, 
+      meta, 
+      timestamp: new Date().toISOString() 
+    }));
+  },
+  // ... warn, debug methods
+};
+```
+
+### Error Handler (`src/lib/errorHandler.ts`)
+
+The error handler classifies and formats errors based on type and environment:
+
+#### Custom Error Classes
+- `ValidationError` (400) - Input validation failures
+- `AuthenticationError` (401) - Authentication failures  
+- `AuthorizationError` (403) - Permission denied
+- `NotFoundError` (404) - Resource not found
+- `DatabaseError` (500) - Database operation failures
+- `ExternalApiError` (502) - External service failures
+
+#### Usage Example
+```typescript
+import { handleError, ValidationError, DatabaseError } from "@/lib/errorHandler";
+
+export async function GET(request: NextRequest) {
+  try {
+    // Your API logic here
+    if (!user) {
+      throw new ValidationError("User ID is required", {
+        method: "GET",
+        url: "/api/users",
+        userId: id
+      });
+    }
+    
+    // Simulate database error
+    throw new DatabaseError("Connection timeout");
+    
+  } catch (error) {
+    return handleError(error, {
+      method: "GET",
+      url: "/api/users",
+      requestId: "req-123456"
+    });
+  }
+}
+```
+
+### Environment-Specific Behavior
+
+| Environment | Behavior |
+|-------------|----------|
+| **Development** | Shows detailed error messages and stack traces |
+| **Production** | Logs detailed errors internally, but sends minimal, user-safe messages |
+
+#### Development Response Example
+```json
+{
+  "success": false,
+  "message": "Database connection failed!",
+  "stack": "Error: Database connection failed! at ...",
+  "timestamp": "2025-01-22T10:30:00.000Z"
+}
+```
+
+#### Production Response Example
+```json
+{
+  "success": false,
+  "message": "Something went wrong. Please try again later.",
+  "timestamp": "2025-01-22T10:30:00.000Z"
+}
+```
+
+#### Log Output (Both Environments)
+```json
+{
+  "level": "error",
+  "message": "Error in GET /api/users",
+  "meta": {
+    "errorType": "DATABASE_ERROR",
+    "statusCode": 500,
+    "originalError": {
+      "name": "Error",
+      "message": "Database connection failed!",
+      "stack": "Error: Database connection failed! at ..."
+    },
+    "method": "GET",
+    "url": "/api/users"
+  },
+  "timestamp": "2025-01-22T10:30:00.000Z"
+}
+```
+
+### Testing Error Handling
+
+Use the test endpoint to experiment with different error scenarios:
+
+```bash
+# Test different error types
+curl "http://localhost:3000/api/test-errors?type=validation"
+curl "http://localhost:3000/api/test-errors?type=auth"
+curl "http://localhost:3000/api/test-errors?type=database"
+curl "http://localhost:3000/api/test-errors?type=generic"
+
+# Test POST errors
+curl -X POST http://localhost:3000/api/test-errors \
+  -H "Content-Type: application/json" \
+  -d '{"test": "simulate-db-error"}'
+```
+
+Available error types:
+- `validation` - Input validation error
+- `auth` - Authentication error
+- `notfound` - Resource not found
+- `database` - Database operation error
+- `external` - External API error
+- `generic` - Generic error
+- `timeout` - Network timeout
+- `network` - Network connection error
+
+### Benefits of This Approach
+
+1. **Debugging Efficiency**: Structured logs with consistent format make it easy to search and filter errors
+2. **User Trust**: Sensitive information is redacted in production responses
+3. **Developer Experience**: Full stack traces available in development
+4. **Monitoring Ready**: JSON-formatted logs work seamlessly with log aggregation tools
+5. **Extensible**: Easy to add new error types and handling logic
+
+### Extending the Handler
+
+To add custom error types:
+
+```typescript
+export class CustomError extends AppError {
+  constructor(message: string, context?: ErrorContext) {
+    super(message, 422, "CUSTOM_ERROR", true, context);
+  }
+}
+
+// Update getErrorType function to handle your new error type
+function getErrorType(error: any): ErrorType {
+  // ... existing logic
+  if (error instanceof CustomError) return "CUSTOM_ERROR";
+  return "INTERNAL_SERVER_ERROR";
+}
+```
+
+---
+
 ## 🔐 Environment Variables & Secrets Management
 
 ### Environment Files
