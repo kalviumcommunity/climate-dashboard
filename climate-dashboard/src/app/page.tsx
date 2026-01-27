@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from "react";
+import { Card } from "@/components";
 
 /* ---------- Icons ---------- */
 const ThermometerIcon = () => (
@@ -44,29 +44,7 @@ export default function HomePage() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [time, setTime] = useState('');
-  const [date, setDate] = useState('');
 
-  /* ---------- Time ---------- */
-  useEffect(() => {
-    const update = () => {
-      const now = new Date();
-      setTime(now.toLocaleTimeString());
-      setDate(
-        now.toLocaleDateString(undefined, {
-          weekday: 'long',
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-        })
-      );
-    };
-    update();
-    const t = setInterval(update, 1000);
-    return () => clearInterval(t);
-  }, []);
-
-  /* ---------- Mock Weather ---------- */
   useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -81,7 +59,7 @@ export default function HomePage() {
         setWeatherData(mock);
         setLoading(false);
       } catch {
-        setError('Failed to load weather data');
+        setError("Failed to load weather data");
         setLoading(false);
       }
     };
@@ -92,97 +70,48 @@ export default function HomePage() {
   }, []);
 
   const getAirQualityStatus = (aqi: number) => {
-    if (aqi <= 50) return { status: 'Good', color: 'bg-green-500' };
-    if (aqi <= 100) return { status: 'Moderate', color: 'bg-yellow-500' };
-    if (aqi <= 150) return { status: 'Unhealthy (Sensitive)', color: 'bg-orange-500' };
-    if (aqi <= 200) return { status: 'Unhealthy', color: 'bg-red-500' };
-    if (aqi <= 300) return { status: 'Very Unhealthy', color: 'bg-purple-500' };
-    return { status: 'Hazardous', color: 'bg-red-800' };
+    if (aqi <= 50) return { status: "Good", color: "bg-green-500" };
+    if (aqi <= 100) return { status: "Moderate", color: "bg-yellow-500" };
+    if (aqi <= 150) return { status: "Unhealthy (Sensitive)", color: "bg-orange-500" };
+    if (aqi <= 200) return { status: "Unhealthy", color: "bg-red-500" };
+    if (aqi <= 300) return { status: "Very Unhealthy", color: "bg-purple-500" };
+    return { status: "Hazardous", color: "bg-red-800" };
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex items-center justify-center h-64">
         <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500" />
       </div>
     );
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-red-600">{error}</p>
-      </div>
-    );
+    return <p className="text-red-600">{error}</p>;
   }
 
   const airQuality = weatherData ? getAirQualityStatus(weatherData.airQuality) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Climate Dashboard</h1>
+    <>
+      {weatherData && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card icon={<ThermometerIcon />} label="Temperature" value={`${weatherData.temperature}°C`} />
+          <Card icon={<DropletIcon />} label="Humidity" value={`${weatherData.humidity}%`} />
+          <Card icon={<WindIcon />} label="Wind Speed" value={`${weatherData.windSpeed} km/h`} />
 
-          <div className="flex items-center gap-6">
-            <div className="text-right">
-              <p className="text-sm text-gray-500">{date}</p>
-              <p className="text-lg font-medium">{time}</p>
+          <div className="bg-white p-6 rounded-lg shadow flex items-center">
+            <div className={`p-3 rounded-full ${airQuality?.color} text-white`}>
+              <AlertTriangleIcon />
             </div>
-
-            {/* Auth Buttons */}
-            <div className="flex gap-3">
-              <Link
-                href="/login"
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium hover:bg-gray-100"
-              >
-                Login
-              </Link>
-              <Link
-                href="/signup"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
-              >
-                Sign Up
-              </Link>
+            <div className="ml-4">
+              <p className="text-sm text-gray-500">Air Quality</p>
+              <p className="text-2xl font-semibold">{weatherData.airQuality} AQI</p>
+              <p className="text-sm text-gray-500">{airQuality?.status}</p>
             </div>
           </div>
         </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 py-6">
-        {weatherData && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card icon={<ThermometerIcon />} label="Temperature" value={`${weatherData.temperature}°C`} />
-            <Card icon={<DropletIcon />} label="Humidity" value={`${weatherData.humidity}%`} />
-            <Card icon={<WindIcon />} label="Wind Speed" value={`${weatherData.windSpeed} km/h`} />
-
-            <div className="bg-white p-6 rounded-lg shadow flex items-center">
-              <div className={`p-3 rounded-full ${airQuality?.color} text-white`}>
-                <AlertTriangleIcon />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm text-gray-500">Air Quality</p>
-                <p className="text-2xl font-semibold">{weatherData.airQuality} AQI</p>
-                <p className="text-sm text-gray-500">{airQuality?.status}</p>
-              </div>
-            </div>
-          </div>
-        )}
-      </main>
-    </div>
-  );
-}
-
-/* ---------- Card Component ---------- */
-function Card({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
-  return (
-    <div className="bg-white p-6 rounded-lg shadow flex items-center">
-      <div className="p-3 rounded-full bg-blue-100 text-blue-600">{icon}</div>
-      <div className="ml-4">
-        <p className="text-sm text-gray-500">{label}</p>
-        <p className="text-2xl font-semibold">{value}</p>
-      </div>
-    </div>
+      )}
+    </>
   );
 }
