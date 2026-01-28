@@ -4,12 +4,11 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FormInput } from "@/components";
+import { sanitizeInput } from "@/utils/sanitize";
 
 /* ---------- Schema ---------- */
 const searchSchema = z.object({
-  city: z
-    .string()
-    .min(2, "City name must be at least 2 characters"),
+  city: z.string().min(2, "City name must be at least 2 characters"),
 });
 
 type SearchFormData = z.infer<typeof searchSchema>;
@@ -24,8 +23,13 @@ export default function SearchPage() {
   });
 
   const onSubmit = (data: SearchFormData) => {
-    console.log("Searching weather for:", data.city);
-    alert(`Fetching weather for ${data.city}`);
+    const sanitizedCity = sanitizeInput(data.city);
+
+    // Before / After proof (important for Kalvium)
+    console.log("Raw input:", data.city);
+    console.log("Sanitized input:", sanitizedCity);
+
+    alert(`Fetching weather for ${sanitizedCity}`);
   };
 
   return (
