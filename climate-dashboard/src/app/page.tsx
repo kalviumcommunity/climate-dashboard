@@ -42,31 +42,29 @@ interface WeatherData {
 
 export default function HomePage() {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchWeather = async () => {
-      try {
-        const mock: WeatherData = {
-          temperature: 22.5,
-          humidity: 65,
-          windSpeed: 12.3,
-          uvIndex: 5,
-          airQuality: 42,
-          timestamp: new Date().toISOString(),
-        };
-        setWeatherData(mock);
-        setLoading(false);
-      } catch {
-        setError("Failed to load weather data");
-        setLoading(false);
+      // Simulate slow network
+      await new Promise((r) => setTimeout(r, 2000));
+
+      const mock: WeatherData = {
+        temperature: 22.5,
+        humidity: 65,
+        windSpeed: 12.3,
+        uvIndex: 5,
+        airQuality: 42,
+        timestamp: new Date().toISOString(),
+      };
+
+      if (!mock) {
+        throw new Error("Weather data unavailable");
       }
+
+      setWeatherData(mock);
     };
 
     fetchWeather();
-    const i = setInterval(fetchWeather, 5 * 60 * 1000);
-    return () => clearInterval(i);
   }, []);
 
   const getAirQualityStatus = (aqi: number) => {
@@ -78,40 +76,26 @@ export default function HomePage() {
     return { status: "Hazardous", color: "bg-red-800" };
   };
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="h-12 w-12 animate-spin rounded-full border-t-2 border-b-2 border-blue-500" />
-      </div>
-    );
-  }
+  if (!weatherData) return null;
 
-  if (error) {
-    return <p className="text-red-600">{error}</p>;
-  }
-
-  const airQuality = weatherData ? getAirQualityStatus(weatherData.airQuality) : null;
+  const airQuality = getAirQualityStatus(weatherData.airQuality);
 
   return (
-    <>
-      {weatherData && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card icon={<ThermometerIcon />} label="Temperature" value={`${weatherData.temperature}°C`} />
-          <Card icon={<DropletIcon />} label="Humidity" value={`${weatherData.humidity}%`} />
-          <Card icon={<WindIcon />} label="Wind Speed" value={`${weatherData.windSpeed} km/h`} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <Card icon={<ThermometerIcon />} label="Temperature" value={`${weatherData.temperature}°C`} />
+      <Card icon={<DropletIcon />} label="Humidity" value={`${weatherData.humidity}%`} />
+      <Card icon={<WindIcon />} label="Wind Speed" value={`${weatherData.windSpeed} km/h`} />
 
-          <div className="bg-white p-6 rounded-lg shadow flex items-center">
-            <div className={`p-3 rounded-full ${airQuality?.color} text-white`}>
-              <AlertTriangleIcon />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm text-gray-500">Air Quality</p>
-              <p className="text-2xl font-semibold">{weatherData.airQuality} AQI</p>
-              <p className="text-sm text-gray-500">{airQuality?.status}</p>
-            </div>
-          </div>
+      <div className="bg-white p-6 rounded-lg shadow flex items-center">
+        <div className={`p-3 rounded-full ${airQuality.color} text-white`}>
+          <AlertTriangleIcon />
         </div>
-      )}
-    </>
+        <div className="ml-4">
+          <p className="text-sm text-gray-500">Air Quality</p>
+          <p className="text-2xl font-semibold">{weatherData.airQuality} AQI</p>
+          <p className="text-sm text-gray-500">{airQuality.status}</p>
+        </div>
+      </div>
+    </div>
   );
 }
